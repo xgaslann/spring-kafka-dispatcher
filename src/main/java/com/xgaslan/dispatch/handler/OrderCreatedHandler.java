@@ -1,5 +1,6 @@
 package com.xgaslan.dispatch.handler;
 
+import com.xgaslan.dispatch.message.OrderCreated;
 import com.xgaslan.dispatch.service.DispatchService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,10 +17,15 @@ public class OrderCreatedHandler {
     @KafkaListener(
             id = "orderConsumerClient",
             topics = "order.created",
-            groupId = "dispatch.order.created.consumer"
+            groupId = "dispatch.order.created.consumer",
+            containerFactory = "kafkaListenerContainerFactory"
     )
-    public void listen(String payload){
+    public void listen(OrderCreated payload){
         log.info("Received message: payload: {}", payload);
-        dispatchService.process(payload);
+        try {
+            dispatchService.process(payload);
+        } catch (Exception e) {
+            log.error("Error while processing: ", e);
+        }
     }
 }
