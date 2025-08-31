@@ -1,5 +1,6 @@
 package com.xgaslan.dispatch.service;
 
+import com.xgaslan.dispatch.message.DispatchPreparing;
 import com.xgaslan.dispatch.message.OrderCreated;
 import com.xgaslan.dispatch.message.OrderDispatched;
 import lombok.RequiredArgsConstructor;
@@ -11,10 +12,19 @@ import org.springframework.stereotype.Service;
 public class DispatchService {
 
     private static final String ORDER_DISPATCHED_TOPIC = "order.dispatched";
+    private static final String DISPATCH_TRACKING_TOPIC = "dispatch.tracking";
 
     private final KafkaTemplate<String, Object> kafkaProducer;
 
     public void process(OrderCreated payload) throws Exception{
+        DispatchPreparing dispatchPreparing = DispatchPreparing
+                .builder()
+                .orderId(payload.getOrderId())
+                .build();
+
+        kafkaProducer.send(DISPATCH_TRACKING_TOPIC, dispatchPreparing).get();
+
+
         OrderDispatched orderDispatched = OrderDispatched
                 .builder()
                 .orderId(payload.getOrderId())
