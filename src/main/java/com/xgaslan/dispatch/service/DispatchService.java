@@ -16,20 +16,15 @@ public class DispatchService {
 
     private final KafkaTemplate<String, Object> kafkaProducer;
 
-    public void process(OrderCreated payload) throws Exception{
-        DispatchPreparing dispatchPreparing = DispatchPreparing
-                .builder()
-                .orderId(payload.getOrderId())
+    public void process(OrderCreated orderCreated) throws Exception{
+        DispatchPreparing dispatchPreparing = DispatchPreparing.builder()
+                .orderId(orderCreated.getOrderId())
                 .build();
-
         kafkaProducer.send(DISPATCH_TRACKING_TOPIC, dispatchPreparing).get();
 
-
-        OrderDispatched orderDispatched = OrderDispatched
-                .builder()
-                .orderId(payload.getOrderId())
+        OrderDispatched orderDispatched = OrderDispatched.builder()
+                .orderId(orderCreated.getOrderId())
                 .build();
-
         kafkaProducer.send(ORDER_DISPATCHED_TOPIC, orderDispatched).get();
     }
 }
